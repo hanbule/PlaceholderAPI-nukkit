@@ -27,7 +27,4 @@ class Configuration(plugin: Plugin) : SimpleConfig(plugin) {
 
     @Path("boolean_format.true")
     var booleanTrueFormat = "yes"
-
-    @Path("array_format")
-    var arraySeparator = ", "
 }

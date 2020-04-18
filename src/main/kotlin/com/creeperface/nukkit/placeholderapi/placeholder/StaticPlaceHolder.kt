@@ -2,39 +2,18 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
-import com.creeperface.nukkit.placeholderapi.api.util.*
-import kotlin.reflect.KClass
+import java.util.function.Function
 
 /**
  * @author CreeperFace
  */
-open class StaticPlaceHolder<T : Any>(
-        name: String,
-        updateInterval: Int,
-        autoUpdate: Boolean,
-        aliases: Set<String>,
-        processParameters: Boolean,
-        scope: AnyScopeClass,
-        type: KClass<T>,
-        formatter: PFormatter,
-        loader: Loader<T>
-) : BasePlaceholder<T>(
-        name,
-        updateInterval,
-        autoUpdate,
-        aliases,
-        processParameters,
-        scope,
-        type,
-        formatter,
-        loader
-) {
+open class StaticPlaceHolder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: Function<PlaceholderParameters, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
 
-    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
-        return loader(AnyValueEntry(null, parameters, context))
+    override fun loadValue(parameters: PlaceholderParameters, player: Player?): T? {
+        return loader.apply(parameters)
     }
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, player: Player?): String {
         checkForUpdate(parameters)
 
         return safeValue()

@@ -1,39 +1,20 @@
 package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
+import cn.nukkit.Server
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
-import com.creeperface.nukkit.placeholderapi.api.util.*
+import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
 import java.util.*
-import kotlin.reflect.KClass
+import java.util.function.BiFunction
 
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T : Any>(
-        name: String,
-        updateInterval: Int,
-        autoUpdate: Boolean,
-        aliases: Set<String>,
-        processParameters: Boolean,
-        scope: AnyScopeClass,
-        type: KClass<T>,
-        formatter: PFormatter,
-        loader: Loader<T>
-) : BasePlaceholder<T>(
-        name,
-        updateInterval,
-        autoUpdate,
-        aliases,
-        processParameters,
-        scope,
-        type,
-        formatter,
-        loader
-) {
+open class VisitorSensitivePlaceholder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: BiFunction<Player, PlaceholderParameters, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()
 
-    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, player: Player?): String {
         if (player == null)
             return name
 
@@ -49,7 +30,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
 
         value = null
 
-        if (checkForUpdate(parameters, context, player, true)) {
+        if (checkForUpdate(parameters, player, true)) {
             if (value != null) {
                 cache[player] = Entry(value)
             }
@@ -58,7 +39,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
         return safeValue()
     }
 
-    override fun updateOrExecute(parameters: PlaceholderParameters, context: AnyContext, player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: PlaceholderParameters, player: Player?, action: Runnable) {
         var updated = false
 
         val cached = cache[player]
@@ -74,7 +55,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
         if (needUpdate) {
             value = null
 
-            if (checkForUpdate(parameters, context, player)) {
+            if (checkForUpdate(parameters, player)) {
                 if (value != null) {
                     cache[player] = Entry(value)
                 }
@@ -88,14 +69,13 @@ open class VisitorSensitivePlaceholder<T : Any>(
         }
     }
 
-    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?) =
-            if (player != null) loader(AnyValueEntry(player, parameters, context)) else null
+    override fun loadValue(parameters: PlaceholderParameters, player: Player?) = if (player != null) loader.apply(player, parameters) else null
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, player: Player?): String {
         if (player == null)
             return name
 
-        if (checkForUpdate(parameters, context, player, true)) {
+        if (checkForUpdate(parameters, player, true)) {
             if (value != null) {
                 cache[player] = Entry(value)
             }
@@ -108,24 +88,24 @@ open class VisitorSensitivePlaceholder<T : Any>(
         if (player == null)
             return false
 
-        val oldValue = cache[player]?.value ?: value
+        val value = cache[player]?.value ?: value
 
-//        if (!Objects.equals(oldValue, newVal)) {
-//            Server.getInstance().scheduler.scheduleTask(PlaceholderAPIIml.instance) {
-//                run {
-//                    val ev = PlaceholderUpdateEvent(this, oldValue, newVal, player)
-//                    server.pluginManager.callEvent(ev)
-//                }
-//
-//                changeListeners.forEach { (_, listener) -> listener.onChange(oldValue, newVal, player) }
-//            }
-//
-//            this.value = newVal
-//            lastUpdate = System.currentTimeMillis()
-//            return true
-//        }
+        if (!Objects.equals(value, newVal)) {
+            Server.getInstance().scheduler.scheduleTask {
+                run {
+                    val ev = PlaceholderUpdateEvent(this, value, newVal, player)
+                    server.pluginManager.callEvent(ev)
+                }
 
-        return super.checkValueUpdate(oldValue, newVal, player)
+                changeListeners.forEach { _, listener -> listener.onChange(value, newVal, player) }
+            }
+
+            this.value = newVal
+            lastUpdate = System.currentTimeMillis()
+            return true
+        }
+
+        return false
     }
 
     override fun isVisitorSensitive() = true

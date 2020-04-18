@@ -4,10 +4,6 @@ import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.google.common.base.Preconditions
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.reflect.KClass
-import kotlin.reflect.full.superclasses
 
 /**
  * @author CreeperFace
@@ -18,10 +14,10 @@ fun String.trimSides(startOffset: Int, endOffset: Int) = this.substring(startOff
 fun <T : Number> T.round(accuracy: Int = 2): T {
     Preconditions.checkArgument(accuracy >= 0)
 
-    val i = 10.toDouble().pow(accuracy.toDouble())
+    val i = Math.pow(10.toDouble(), accuracy.toDouble())
 
     @Suppress("UNCHECKED_CAST")
-    return ((this.toDouble() * i).roundToInt() / i) as T
+    return (Math.round(this.toDouble() * i) / i) as T
 }
 
 fun Long.formatAsTime(format: String): String {
@@ -51,26 +47,4 @@ fun Any.toFormattedString(): String = when (this) {
     is Boolean -> toFormatString()
     is Date -> toFormatString()
     else -> toString()
-}
-
-fun KClass<*>.nestedSuperClass(clazz: KClass<*>, level: Int = 0): Int {
-    if (this == clazz) {
-        return level
-    }
-
-    if (this.superclasses.isEmpty()) {
-        return -1
-    }
-
-    var minLevel = Int.MAX_VALUE
-
-    this.superclasses.forEach { superClass ->
-        val superLevel = superClass.nestedSuperClass(clazz, level + 1)
-
-        if (superLevel in 0 until minLevel) {
-            minLevel = superLevel
-        }
-    }
-
-    return minLevel
 }
