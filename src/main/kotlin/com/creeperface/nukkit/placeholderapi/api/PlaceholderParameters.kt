@@ -13,7 +13,10 @@ class PlaceholderParameters(private val params: Map<String, String>, private val
 
     fun getUnnamed() = unnamed.toList()
 
-    fun getAll() = params.values + unnamed
+    fun get() = params.values + unnamed
+
+    @Deprecated("", replaceWith = ReplaceWith("get()"))
+    fun getAll() = params.toMap()
 
     companion object {
         val EMPTY = PlaceholderParameters(emptyMap(), emptyList())
