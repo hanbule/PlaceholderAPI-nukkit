@@ -89,7 +89,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
 
     override fun removeListener(plugin: Plugin) = changeListeners.remove(plugin)
 
-    protected open fun readyToUpdate() = updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis())
+    protected open fun readyToUpdate() = updateInterval == -1 || (updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis()))
 
     fun intervalMillis() = updateInterval * 50
 }
