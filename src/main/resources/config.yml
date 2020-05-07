@@ -1,5 +1,5 @@
 #PlaceholderAPI configuration file
-version: 2
+version: 3
 
 #Sets the minimal delay between separate updates of a placeholder (in ticks).
 min_update_interval: 10
@@ -14,8 +14,8 @@ date_format: "yyyy-MM-dd"
 time_format: "HH:mm:ss"
 
 boolean_format:
-  true: "yes"
-  false: "no"
+  true_value: "yes"
+  false_value: "no"
 
 #number of digits displayed
 coordinates_accuracy: 2

@@ -1,30 +1,44 @@
 package com.creeperface.nukkit.placeholderapi
 
 import cn.nukkit.plugin.Plugin
-import cn.nukkit.utils.SimpleConfig
 
 /**
  * @author CreeperFace
  */
-class Configuration(plugin: Plugin) : SimpleConfig(plugin) {
+class Configuration(private val plugin: Plugin) {
 
-    var version = 0.toDouble()
+    val version: Double
 
-    @Path("min_update_interval")
-    var updateInterval = 10
+    val updateInterval: Int
 
-    @Path("date_format")
-    var dateFormat = "yyyy-MM-dd"
+    val dateFormat: String
 
-    @Path("time_format")
-    var timeFormat = "HH:mm:ss"
+    val timeFormat: String
 
-    @Path("coordinates_accuracy")
-    var coordsAccuracy = 2
+    val coordsAccuracy: Int
 
-    @Path("boolean_format.false")
-    var booleanFalseFormat = "no"
+    val booleanFalseFormat: String
 
-    @Path("boolean_format.true")
-    var booleanTrueFormat = "yes"
+    val booleanTrueFormat: String
+
+    init {
+        val cfg = plugin.config
+
+        version = cfg.getDouble("version", 0.0)
+        updateInterval = cfg.getInt("min_update_interval", 10)
+        dateFormat = cfg.getString("date_format", "yyyy-MM-dd")
+        timeFormat = cfg.getString("time_format", "HH:mm:ss")
+        coordsAccuracy = cfg.getInt("coordinates_accuracy", 2)
+        booleanFalseFormat = cfg.getString("boolean_format.false_value", "no")
+        booleanTrueFormat = cfg.getString("boolean_format.true_value", "yes")
+
+        if (version < VERSION) {
+            plugin.logger.warning("Current config version is outdated and some properties might be missing")
+        }
+    }
+
+    companion object {
+
+        const val VERSION = 3
+    }
 }

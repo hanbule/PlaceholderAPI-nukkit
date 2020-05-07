@@ -55,7 +55,6 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
         saveDefaultConfig()
         configuration = Configuration(this)
-        configuration.load()
     }
 
     internal fun init() {
