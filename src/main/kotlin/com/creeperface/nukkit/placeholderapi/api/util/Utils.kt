@@ -41,10 +41,10 @@ fun String.matchPlaceholders(): List<MatchedGroup> {
             }
         }
 
-        list.add(MatchedGroup(s, matcher.start(), matcher.end(), PlaceholderParameters(params, unnamedParams)))
+        list.add(MatchedGroup(matcher.group(0), s, matcher.start(), matcher.end(), PlaceholderParameters(params, unnamedParams)))
     }
 
     return list
 }
 
-data class MatchedGroup(val value: String, val start: Int, val end: Int, val params: PlaceholderParameters = PlaceholderParameters.EMPTY)
+data class MatchedGroup(val raw: String, val value: String, val start: Int, val end: Int, val params: PlaceholderParameters = PlaceholderParameters.EMPTY)
